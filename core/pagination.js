@@ -19,7 +19,7 @@ const getDefaultPageSize = (options) => {
 //
 // source code
 //
-export const pagination = (query, options) => {
+module.exports = (query, options) => {
   if (!query) {
     return;
   }
