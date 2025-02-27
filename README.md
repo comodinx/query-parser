@@ -17,7 +17,7 @@ $ npm install @comodinx/query-parser
 
 ### Source code
 ```bash
-$ git clone https://github.com/comodinx/query-parser.git
+$ git clone https://gitlab.com/comodinx/query-parser.git
 $ cd query-parser
 $ npm install
 ```
