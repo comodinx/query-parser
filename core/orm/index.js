@@ -1,1 +1,5 @@
-const sequelize = require("./sequelize");
+const sequelizeParser = require("./sequelize");
+
+module.exports = {
+  sequelizeParser
+};
