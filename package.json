@@ -1,22 +1,25 @@
 {
   "name": "@comodinx/query-parser",
-  "version": "0.0.4",
+  "version": "1.0.0",
   "description": "@comodinx/query-parser is a module for parser query parameters on ORM object (sequelize).",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "lint": "node_modules/.bin/eslint core tests",
-    "lint-fix": "node_modules/.bin/eslint --fix core tests",
-    "test": "NODE_ENV=testing mocha --file './tests/setup.js' --reporter spec --recursive tests/**/*.test.js"
+    "build": "tsc -p .",
+    "clean": "tsc --build --clean ./types",
+    "prepare": "if [ \"$HUSKY\" != \"0\" ]; then husky; fi",
+    "lint": "eslint --fix ./core ./tests",
+    "test": "NODE_ENV=testing node --import tsx --test tests/**/*.test.ts"
   },
-  "homepage": "https://gitlab.com/comodinx/query-parser#readme",
+  "homepage": "https://github.com/comodinx/query-parser#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/comodinx/query-parser.git"
+    "url": "git+https://github.com/comodinx/query-parser.git"
   },
   "author": "Milo Molina Developer",
   "license": "ISC",
   "bugs": {
-    "url": "https://gitlab.com/comodinx/query-parser/issues"
+    "url": "https://github.com/comodinx/query-parser/issues"
   },
   "keywords": [
     "query",
@@ -26,16 +29,25 @@
     "comodinx"
   ],
   "dependencies": {
-    "@comodinx/query-filters": "~0.0.3"
+    "@comodinx/query-filters": "^1.0.1"
   },
   "devDependencies": {
-    "chai": "^4.2.0",
-    "eslint": "^6.6.0",
-    "eslint-config-standard": "^14.1.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-node": "^10.0.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
-    "mocha": "^6.2.2"
+    "@types/node": "^25.0.9",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-promise": "^6.6.0",
+    "eslint-plugin-standard": "^4.1.0",
+    "husky": "^9.1.7",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.53.0"
+  },
+  "peerDependencies": {
+    "lodash": "^4.17.21",
+    "sequelize": "^6.37.7"
   }
 }

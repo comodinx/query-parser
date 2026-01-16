@@ -1,4 +1,5 @@
-const { isObject, isString, reduce } = require("lodash");
+import { isObject, isString, reduce } from "lodash";
+import { ParserQuery, ParserOptions, ParserResult, ParserPropertyType } from "./types";
 
 //
 // constants
@@ -7,20 +8,35 @@ const defaultSeparator = ",";
 const defaultConcatenator = ".";
 const defaultRemotePrefix = "r-";
 const defaultExtraPrefix = "e-";
-const mapTypes = {
-  fields: "attributes"
+const mapTypes: Record<ParserPropertyType, ParserPropertyType> = {
+  attributes: "attributes",
+  fields: "attributes",
+  include: "include"
 };
 
 //
 // helpers
 //
-const getDefaultSeparator = (type, options) => {
-  return (isObject(options) ? options[`${type}Separator`] : defaultSeparator) || defaultSeparator;
+const getDefaultSeparator = (
+  type: ParserPropertyType,
+  query: ParserQuery,
+  options: ParserOptions
+): string => {
+  return (
+    (isObject(query) ? query[`${type}Separator`] : undefined) ||
+    (isObject(options) ? options[`${type}Separator`] : undefined) ||
+    defaultSeparator
+  );
 };
 
-const getDefaultConcatenator = (type, options) => {
+const getDefaultConcatenator = (
+  type: ParserPropertyType,
+  query: ParserQuery,
+  options: ParserOptions
+): string => {
   return (
-    (isObject(options) ? options[`${type}Concatenator`] : defaultConcatenator) ||
+    (isObject(query) ? query[`${type}Concatenator`] : undefined) ||
+    (isObject(options) ? options[`${type}Concatenator`] : undefined) ||
     defaultConcatenator
   );
 };
@@ -34,7 +50,7 @@ const getDefaultConcatenator = (type, options) => {
  *   person
  *   \____/ -> This is the normal property. Then, return false
  */
-const isRemoteProperty = (property) => property.startsWith(defaultRemotePrefix);
+const isRemoteProperty = (property: string): boolean => property.startsWith(defaultRemotePrefix);
 
 /**
  * Normalize remote property if necesary
@@ -45,7 +61,7 @@ const isRemoteProperty = (property) => property.startsWith(defaultRemotePrefix);
  *   person
  *   \____/ -> This is the normal property. Then, return "person"
  */
-const normalizeRemoteProperty = (property) =>
+const normalizeRemoteProperty = (property: string): string =>
   property.replace(defaultRemotePrefix, "");
 
 /**
@@ -57,7 +73,7 @@ const normalizeRemoteProperty = (property) =>
  *   person
  *   \____/ -> This is the normal property. Then, return false
  */
-const isExtraProperty = (property) => property.startsWith(defaultExtraPrefix);
+const isExtraProperty = (property: string): boolean => property.startsWith(defaultExtraPrefix);
 
 /**
  * Normalize extra property if necesary
@@ -68,7 +84,7 @@ const isExtraProperty = (property) => property.startsWith(defaultExtraPrefix);
  *   person
  *   \____/ -> This is the normal property. Then, return "person"
  */
-const normalizeExtraProperty = (property) =>
+const normalizeExtraProperty = (property: string): string =>
   property.replace(defaultExtraPrefix, "");
 
 /**
@@ -82,7 +98,7 @@ const normalizeExtraProperty = (property) =>
  *   person
  *   \____/ -> This is the normal property. Then, return "person"
  */
-const normalizeRemoteExtraProperty = (property) =>
+const normalizeRemoteExtraProperty = (property: string): string =>
   normalizeExtraProperty(normalizeRemoteProperty(property));
 
 /**
@@ -94,7 +110,7 @@ const normalizeRemoteExtraProperty = (property) =>
  *   person
  *   \____/ -> This is the normal property. Then, save in carry
  */
-const resolveProperty = (opts, property, carry) => {
+const resolveProperty = (opts: ParserResult, property: string, carry: string[]): void => {
   // Check if property is remote property
   //
   //   r-person
@@ -133,7 +149,11 @@ const resolveProperty = (opts, property, carry) => {
   }
 };
 
-const resolveRelationship = (context, type, property) => {
+const resolveRelationship = (
+  context: ParserResult,
+  type: ParserPropertyType,
+  property: string
+): void => {
   type = mapTypes[type] || type;
 
   if (!isRemoteProperty(property) && !isExtraProperty(property)) {
@@ -145,16 +165,19 @@ const resolveRelationship = (context, type, property) => {
 //
 // source code
 //
-module.exports = (query, type, options = {}) => {
+export const parseProperties = (
+  query: ParserQuery,
+  type: ParserPropertyType,
+  options: ParserOptions = {}
+): Partial<ParserResult> | undefined => {
   if (!query || !query[type]) {
     return;
   }
 
-  const concatenator = getDefaultConcatenator(type, options);
-  const properties = isString(query[type])
-    ? query[type].split(getDefaultSeparator(type, options))
-    : query[type];
-  const opts = {
+  const concatenator = getDefaultConcatenator(type, query, options);
+  const separator = getDefaultSeparator(type, query, options);
+  const properties = isString(query[type]) ? query[type].split(separator) : query[type];
+  const opts: Partial<ParserResult> = {
     [type]: []
   };
 

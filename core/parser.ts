@@ -1,22 +1,17 @@
-'use strict';
-
-const { mergeWith } = require("lodash");
-const { sequelizeParser } = require("./orm");
-const buildFields = require("./fields");
-const buildFilters = require("./filters");
-const buildGroup = require("./group");
-const buildInclude = require("./include");
-const buildOrder = require("./order");
-const buildPagination = require("./pagination");
+import { mergeWith } from "lodash";
+import { sequelizeParser } from "./orm";
+import { parseFields } from "./fields";
+import { parseFilters } from "./filters";
+import { parseGroup } from "./group";
+import { parseInclude } from "./include";
+import { parseOrder } from "./order";
+import { parsePagination } from "./pagination";
+import { ParserOptions, ParserQuery, ParserResult } from "./types";
 
 //
 // helpers
 //
-
-/**
- * Merge array values
- */
-const mergeArrays = (objValue, srcValue) => {
+const mergeArrays = (objValue: unknown, srcValue: unknown): unknown => {
   if (Array.isArray(objValue)) {
     return objValue.concat(srcValue);
   }
@@ -25,19 +20,21 @@ const mergeArrays = (objValue, srcValue) => {
 //
 // source code
 //
-module.exports =(query, options = {}) => {
-  const pagination = buildPagination(query, options);
-  const filters = buildFilters(query, options);
-  const fieldsOptions = buildFields(query, options);
-  const includeOptions = buildInclude(query, options);
-  const orders = buildOrder(query, options);
-  const groups = buildGroup(query);
-  const opts = {};
+export const parseQuery = (
+  query: ParserQuery,
+  options: ParserOptions = {}
+): Partial<ParserResult> => {
+  const pagination = parsePagination(query, options);
+  const filters = parseFilters(query, options);
+  const fieldsOptions = parseFields(query, options);
+  const includeOptions = parseInclude(query, options);
+  const orders = parseOrder(query, options);
+  const groups = parseGroup(query, options);
+  let opts: Partial<ParserResult> = {};
 
   // resolve pagination
   if (pagination) {
-    opts.limit = pagination.limit;
-    opts.offset = pagination.offset;
+    opts = { ...opts, ...pagination };
   }
 
   // resolve filters as where
@@ -90,6 +87,11 @@ module.exports =(query, options = {}) => {
   // Add raw query options
   if (query.includeRaw || options.includeRaw) {
     opts.rawQueryOptions = query;
+  }
+
+  // Return raw options parsed
+  if (query.raw || options.raw) {
+    return opts;
   }
 
   // Parse options to sequelize ORM format

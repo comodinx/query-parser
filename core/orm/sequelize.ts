@@ -1,4 +1,6 @@
-const { each, find, isEmpty, isString } = require("lodash");
+import { Op } from "sequelize";
+import { each, find, isString } from "lodash";
+import { ParserResult } from "../types";
 
 //
 // constants
@@ -8,7 +10,7 @@ const fieldSeparator = ".";
 //
 // source code
 //
-module.exports = (opts) => {
+export const sequelizeParser = (opts: Partial<ParserResult>): Partial<ParserResult> => {
   // Resolve include option
   resolveInclude(opts);
 
@@ -25,7 +27,7 @@ module.exports = (opts) => {
 /**
  * Resolve include option
  */
-const resolveInclude = (opts) => {
+const resolveInclude = (opts: Partial<ParserResult>): Partial<ParserResult> => {
   if (!opts || !opts.include) {
     return opts;
   }
@@ -53,7 +55,7 @@ const resolveInclude = (opts) => {
 /**
  * Resolve where option
  */
-const resolveWhere = (opts) => {
+const resolveWhere = (opts: Partial<ParserResult>): Partial<ParserResult> => {
   if (!opts || !opts.where) {
     return opts;
   }
@@ -71,7 +73,10 @@ const resolveWhere = (opts) => {
   });
 
   // Clean
-  if (isEmpty(opts.where)) {
+  if (
+    !opts.where ||
+    (Object.getOwnPropertySymbols(opts.where).length === 0 && Object.keys(opts.where).length === 0)
+  ) {
     delete opts.where;
   }
 
@@ -81,10 +86,27 @@ const resolveWhere = (opts) => {
 /**
  * Resolve where nested condition
  */
-const resolveWhereCondition = (opts, key, condition) => {
+const resolveWhereCondition = (
+  opts: Partial<ParserResult>,
+  key: string,
+  condition: unknown
+): Partial<ParserResult> => {
   if (!key.includes(fieldSeparator)) {
     opts.where = opts.where || {};
-    opts.where[key] = condition;
+
+    switch (key) {
+      case "or":
+        opts.where[Op.or] = condition;
+        break;
+
+      case "and":
+        opts.where[Op.and] = condition;
+        break;
+
+      default:
+        opts.where[key] = condition;
+        break;
+    }
     opts.required = true;
 
     return opts;
