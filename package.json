@@ -1,6 +1,6 @@
 {
   "name": "@comodinx/query-parser",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "@comodinx/query-parser is a module for parser query parameters on ORM object (sequelize).",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

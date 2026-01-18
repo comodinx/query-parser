@@ -2,11 +2,7 @@ import { map } from "lodash";
 import { col, fn } from "sequelize";
 import { parseProperties } from "./properties";
 import { ParserQuery, ParserOptions, ParserResult } from "./types";
-
-//
-// constants
-//
-const defaultConcatenator = "-";
+import * as constants from "./constants";
 
 //
 // source code
@@ -20,7 +16,9 @@ export const parseFields = (
   }
 
   const concatenator =
-    query.fieldsConcatenator || options.fieldsConcatenator || defaultConcatenator;
+    query.fieldsGroupConcatenator ||
+    options.fieldsGroupConcatenator ||
+    constants.fieldGroupConcatenator;
   const result = parseProperties(query, "fields", { ...options, skipFirstLevelProperty: true });
 
   if (result && result.fields) {
@@ -31,10 +29,16 @@ export const parseFields = (
         return field;
       }
 
-      return [fn(parts[0], col(parts[1])), parts[2] || (parts[1] !== "*" ? parts[1] : parts[0])];
+      const [functionName, fieldName, alias, ...rest] = parts;
+
+      return [
+        fn(functionName, col(fieldName), ...rest),
+        alias ?? (fieldName !== constants.fieldAllIndicator ? fieldName : functionName)
+      ];
     });
 
-    result.fields = fields && fields.length === 1 && fields[0] === "*" ? null : fields;
+    result.fields =
+      fields && fields.length === 1 && fields[0] === constants.fieldAllIndicator ? null : fields;
   }
 
   return result;

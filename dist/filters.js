@@ -38,13 +38,12 @@ const operators = __importStar(require("@comodinx/query-filters/dist/operators")
 const query_filters_1 = require("@comodinx/query-filters");
 const lodash_1 = require("lodash");
 const sequelize_1 = require("sequelize");
+const constants = __importStar(require("./constants"));
 //
 // constants
 //
-const trues = ["true", "1", "on"];
-const falses = ["false", "0", "off"];
-const booleans = [...trues, ...falses];
-const key = "[A-Za-z0-9_.]+";
+// Last parser instance
+let lastParser = null;
 // operator mappers
 const mapOperator = {
     [operators.exactEqual]: sequelize_1.Op.eq, // Exact Equal
@@ -63,13 +62,6 @@ const mapOperator = {
     [operators.isNull]: sequelize_1.Op.is,
     [operators.isNotNull]: sequelize_1.Op.not
 };
-const valueLikeParse = /\*/g;
-// eslint-disable-next-line no-useless-escape
-const valueLikeFormat = /\%/g;
-// Json keys
-const defaultJsonKeys = ["metadata"];
-// Last parser instance
-let lastParser = null;
 //
 // helpers
 //
@@ -80,7 +72,7 @@ const isNumberString = (value) => {
     return !(0, lodash_1.isEmpty)(value) && !isNaN(Number(value));
 };
 const isBooleanString = (value) => {
-    return !(0, lodash_1.isEmpty)(value) && booleans.includes(String(value).toLowerCase());
+    return !(0, lodash_1.isEmpty)(value) && constants.booleans.includes(String(value).toLowerCase());
 };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapValueParse = (value, operator) => {
@@ -105,10 +97,10 @@ const mapValueParse = (value, operator) => {
         return value;
     }
     if (isBooleanString(value)) {
-        return trues.includes(String(value).toLowerCase());
+        return constants.trues.includes(String(value).toLowerCase());
     }
     if ((0, lodash_1.isString)(value)) {
-        return value.replace(valueLikeParse, "%");
+        return value.replace(constants.valueLikeParse, "%");
     }
     return value;
 };
@@ -120,12 +112,12 @@ const mapValueFormat = (value, operator) => {
         return JSON.stringify(value);
     }
     if ((0, lodash_1.isString)(value)) {
-        return value.replace(valueLikeFormat, "*");
+        return value.replace(constants.valueLikeFormat, "*");
     }
     return `${value}`;
 };
 const createParser = (options = {}) => {
-    return new query_filters_1.Parser((0, lodash_1.merge)({ mapValueFormat, mapValueParse, mapOperator, key }, options));
+    return new query_filters_1.Parser((0, lodash_1.merge)({ mapValueFormat, mapValueParse, mapOperator, key: constants.keyPattern }, options));
 };
 //
 // source code
@@ -135,12 +127,13 @@ const parseFilters = (query, options = {}) => {
         return;
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parser = (lastParser = options.parser ?? lastParser ?? createParser(options));
+    const parser = (lastParser =
+        options.parser ?? lastParser ?? createParser((options.parserOptions ?? options)));
     const parsed = parser.parse(query.filters);
     if (!parsed) {
         return;
     }
-    const jsonKeys = options.jsonKeys || defaultJsonKeys;
+    const jsonKeys = options.jsonKeys ?? constants.filtersJsonKeys;
     return (0, lodash_1.reduce)(parsed, (carry, condition, key) => {
         const jsonKey = (0, lodash_1.find)(jsonKeys, (jsonKey) => (0, lodash_1.startsWith)(key, `${jsonKey}.`));
         if (jsonKey) {

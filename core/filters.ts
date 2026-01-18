@@ -15,14 +15,13 @@ import {
 } from "lodash";
 import { literal, Op, where } from "sequelize";
 import { ParserOptions, ParserQuery, ParserResult } from "./types";
+import * as constants from "./constants";
 
 //
 // constants
 //
-const trues = ["true", "1", "on"];
-const falses = ["false", "0", "off"];
-const booleans = [...trues, ...falses];
-const key = "[A-Za-z0-9_.]+";
+// Last parser instance
+let lastParser: Parser | null = null;
 
 // operator mappers
 const mapOperator: Record<string, symbol> = {
@@ -43,16 +42,6 @@ const mapOperator: Record<string, symbol> = {
   [operators.isNotNull]: Op.not
 };
 
-const valueLikeParse = /\*/g;
-// eslint-disable-next-line no-useless-escape
-const valueLikeFormat = /\%/g;
-
-// Json keys
-const defaultJsonKeys = ["metadata"];
-
-// Last parser instance
-let lastParser: Parser | null = null;
-
 //
 // helpers
 //
@@ -65,7 +54,7 @@ const isNumberString = (value: unknown): boolean => {
 };
 
 const isBooleanString = (value: unknown): boolean => {
-  return !isEmpty(value) && booleans.includes(String(value).toLowerCase());
+  return !isEmpty(value) && constants.booleans.includes(String(value).toLowerCase());
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -95,10 +84,10 @@ const mapValueParse = <T = any>(value: unknown, operator: string): T | null => {
     return value as T;
   }
   if (isBooleanString(value)) {
-    return trues.includes(String(value).toLowerCase()) as T;
+    return constants.trues.includes(String(value).toLowerCase()) as T;
   }
   if (isString(value)) {
-    return (value as string).replace(valueLikeParse, "%") as T;
+    return (value as string).replace(constants.valueLikeParse, "%") as T;
   }
 
   return value as T;
@@ -112,14 +101,16 @@ const mapValueFormat = (value: unknown, operator: string): string => {
     return JSON.stringify(value);
   }
   if (isString(value)) {
-    return (value as string).replace(valueLikeFormat, "*");
+    return (value as string).replace(constants.valueLikeFormat, "*");
   }
 
   return `${value}`;
 };
 
 const createParser = (options: ParserFiltersOptions = {}): Parser => {
-  return new Parser(merge({ mapValueFormat, mapValueParse, mapOperator, key }, options));
+  return new Parser(
+    merge({ mapValueFormat, mapValueParse, mapOperator, key: constants.keyPattern }, options)
+  );
 };
 
 //
@@ -134,14 +125,15 @@ export const parseFilters = (
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const parser = (lastParser = options.parser ?? lastParser ?? createParser(options));
+  const parser = (lastParser =
+    options.parser ?? lastParser ?? createParser((options.parserOptions ?? options) as never));
   const parsed = parser.parse(query.filters);
 
   if (!parsed) {
     return;
   }
 
-  const jsonKeys = options.jsonKeys || defaultJsonKeys;
+  const jsonKeys = options.jsonKeys ?? constants.filtersJsonKeys;
 
   return reduce(
     parsed,

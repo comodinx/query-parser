@@ -1,18 +1,6 @@
 import { isObject, isString, reduce } from "lodash";
 import { ParserQuery, ParserOptions, ParserResult, ParserPropertyType } from "./types";
-
-//
-// constants
-//
-const defaultSeparator = ",";
-const defaultConcatenator = ".";
-const defaultRemotePrefix = "r-";
-const defaultExtraPrefix = "e-";
-const mapTypes: Record<ParserPropertyType, ParserPropertyType> = {
-  attributes: "attributes",
-  fields: "attributes",
-  include: "include"
-};
+import * as constants from "./constants";
 
 //
 // helpers
@@ -25,7 +13,7 @@ const getDefaultSeparator = (
   return (
     (isObject(query) ? query[`${type}Separator`] : undefined) ||
     (isObject(options) ? options[`${type}Separator`] : undefined) ||
-    defaultSeparator
+    constants.propertiesSeparator
   );
 };
 
@@ -37,7 +25,7 @@ const getDefaultConcatenator = (
   return (
     (isObject(query) ? query[`${type}Concatenator`] : undefined) ||
     (isObject(options) ? options[`${type}Concatenator`] : undefined) ||
-    defaultConcatenator
+    constants.propertiesConcatenator
   );
 };
 
@@ -50,7 +38,8 @@ const getDefaultConcatenator = (
  *   person
  *   \____/ -> This is the normal property. Then, return false
  */
-const isRemoteProperty = (property: string): boolean => property.startsWith(defaultRemotePrefix);
+const isRemoteProperty = (property: string): boolean =>
+  property.startsWith(constants.propertiesRemotePrefix);
 
 /**
  * Normalize remote property if necesary
@@ -62,7 +51,7 @@ const isRemoteProperty = (property: string): boolean => property.startsWith(defa
  *   \____/ -> This is the normal property. Then, return "person"
  */
 const normalizeRemoteProperty = (property: string): string =>
-  property.replace(defaultRemotePrefix, "");
+  property.replace(constants.propertiesRemotePrefix, "");
 
 /**
  * Indicate if property is extra property
@@ -73,7 +62,8 @@ const normalizeRemoteProperty = (property: string): string =>
  *   person
  *   \____/ -> This is the normal property. Then, return false
  */
-const isExtraProperty = (property: string): boolean => property.startsWith(defaultExtraPrefix);
+const isExtraProperty = (property: string): boolean =>
+  property.startsWith(constants.propertiesExtraPrefix);
 
 /**
  * Normalize extra property if necesary
@@ -85,7 +75,7 @@ const isExtraProperty = (property: string): boolean => property.startsWith(defau
  *   \____/ -> This is the normal property. Then, return "person"
  */
 const normalizeExtraProperty = (property: string): string =>
-  property.replace(defaultExtraPrefix, "");
+  property.replace(constants.propertiesExtraPrefix, "");
 
 /**
  * Normalize remote or extra property if necesary
@@ -154,7 +144,7 @@ const resolveRelationship = (
   type: ParserPropertyType,
   property: string
 ): void => {
-  type = mapTypes[type] || type;
+  type = constants.propertiesMapTypes[type] || type;
 
   if (!isRemoteProperty(property) && !isExtraProperty(property)) {
     context[type] = context[type] || [];
@@ -170,13 +160,13 @@ export const parseProperties = (
   type: ParserPropertyType,
   options: ParserOptions = {}
 ): Partial<ParserResult> | undefined => {
-  if (!query || !query[type]) {
+  if (!query || !query[type] || (isString(query[type]) && !query[type].trim())) {
     return;
   }
 
   const concatenator = getDefaultConcatenator(type, query, options);
   const separator = getDefaultSeparator(type, query, options);
-  const properties = isString(query[type]) ? query[type].split(separator) : query[type];
+  const properties = isString(query[type]) ? query[type].trim().split(separator) : query[type];
   const opts: Partial<ParserResult> = {
     [type]: []
   };

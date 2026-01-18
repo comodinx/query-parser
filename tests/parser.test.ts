@@ -2,7 +2,7 @@ import { isArray, isObject } from "lodash";
 import assert from "node:assert";
 import { describe, it } from "node:test";
 import { Op } from "sequelize";
-import { parseQuery } from "../core";
+import { parseQuery, ParserInclude } from "../core";
 
 describe("Parser", () => {
   describe("#parseQuery", () => {
@@ -174,7 +174,7 @@ describe("Parser", () => {
         "Result.include[0].include should be an array"
       );
       assert.ok(
-        result?.include?.[0]?.include?.[0]?.association === "profile",
+        (result?.include?.[0]?.include?.[0] as ParserInclude)?.association === "profile",
         "Result.include[0].include[0].association should be 'profile'"
       );
     });
@@ -273,7 +273,10 @@ describe("Parser", () => {
       assert.ok(isObject(result), "Result should be an object");
       assert.ok(result?.where == null, "Result.where should not exists");
       assert.ok(isArray(result?.include), "Result.include should be an array");
-      assert.ok(result?.include?.length > 0, "Result.include should have elements");
+      assert.ok(
+        result?.include?.length && result?.include?.length > 0,
+        "Result.include should have elements"
+      );
       // The nested filter should create an include
       const userInclude = result?.include?.find((inc) => inc?.association === "user");
 

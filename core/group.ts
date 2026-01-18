@@ -1,9 +1,5 @@
 import { ParserQuery, ParserOptions, ParserResult } from "./types";
-
-//
-// constants
-//
-const defaultSeparator = ",";
+import * as constants from "./constants";
 
 //
 // source code
@@ -16,7 +12,7 @@ export const parseGroup = (
     return;
   }
 
-  const separator = query.groupSeparator || options.groupSeparator || defaultSeparator;
+  const separator = query.groupSeparator ?? options.groupSeparator ?? constants.groupSeparator;
 
   return query.group.split(separator);
 };

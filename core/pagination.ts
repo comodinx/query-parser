@@ -1,24 +1,9 @@
-import { isNumber, isObject } from "lodash";
 import { ParserQuery, ParserOptions, ParserResult } from "./types";
-
-//
-// constants
-//
-const defaultPageSize = 0;
+import * as constants from "./constants";
 
 //
 // source code
 //
-const getDefaultPageSize = (options: number | ParserOptions): number => {
-  if (isNumber(options)) {
-    return options as number;
-  }
-
-  return (
-    (isObject(options) ? (options as ParserOptions)?.pageSize : defaultPageSize) || defaultPageSize
-  );
-};
-
 export const parsePagination = (
   query: ParserQuery,
   options: ParserOptions = {}
@@ -27,12 +12,13 @@ export const parsePagination = (
     return;
   }
 
-  const pageSize = Number(query.page_size || query.pageSize || getDefaultPageSize(options));
-  const page = Number(query.page || 1) - 1;
+  const pageSize = Number(query.pageSize ?? options.pageSize ?? constants.paginationPageSize);
 
   if (!pageSize) {
     return;
   }
+
+  const page = Number(query.page || 1) - 1;
 
   return {
     limit: pageSize,

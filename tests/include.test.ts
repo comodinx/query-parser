@@ -331,9 +331,7 @@ describe("Parser", () => {
     it("should handle include with only whitespace", () => {
       const result = parseInclude({ include: "   " });
 
-      assert.ok(result != null, "Result should not be null");
-      assert.ok(isArray(result?.include), "Result.include should be an array");
-      assert.ok(result?.include?.length === 1, "Result.include should have 1 element (whitespace)");
+      assert.ok(result == undefined, "Result should be undefined");
     });
 
     // Array input

@@ -1,11 +1,7 @@
 import { Op } from "sequelize";
 import { each, find, isString } from "lodash";
-import { ParserResult } from "../types";
-
-//
-// constants
-//
-const fieldSeparator = ".";
+import { ParserResult, ParserInclude } from "../types";
+import * as constants from "../constants";
 
 //
 // source code
@@ -27,15 +23,18 @@ export const sequelizeParser = (opts: Partial<ParserResult>): Partial<ParserResu
 /**
  * Resolve include option
  */
-const resolveInclude = (opts: Partial<ParserResult>): Partial<ParserResult> => {
-  if (!opts || !opts.include) {
+const resolveInclude = (
+  opts: Partial<ParserResult> | ParserResult["include"]
+): Partial<ParserResult> | ParserResult["include"] | undefined => {
+  if (!opts || !(opts as Partial<ParserResult>).include) {
     return opts;
   }
 
-  const relations = opts.relations || {};
+  const result = opts as Partial<ParserResult>;
+  const relations = result.relations || {};
 
   // Associate model
-  opts.include = opts.include.map((association) => {
+  result.include = result.include.map((association: ParserInclude) => {
     if (!isString(association)) {
       return association;
     }
@@ -45,11 +44,11 @@ const resolveInclude = (opts: Partial<ParserResult>): Partial<ParserResult> => {
       // Associate model
       association,
       // Extra options for this include association
-      ...(relations[association] || {})
+      ...(relations[association as string] || {})
     });
-  });
+  }) as ParserInclude[];
 
-  return opts;
+  return result;
 };
 
 /**
@@ -91,7 +90,7 @@ const resolveWhereCondition = (
   key: string,
   condition: unknown
 ): Partial<ParserResult> => {
-  if (!key.includes(fieldSeparator)) {
+  if (!key.includes(constants.propertiesConcatenator)) {
     opts.where = opts.where || {};
 
     switch (key) {
@@ -112,9 +111,9 @@ const resolveWhereCondition = (
     return opts;
   }
 
-  const [association] = key.split(fieldSeparator);
-  const nextKey = key.replace(`${association}.`, "");
-  let relation = find(opts.include, ["association", association]);
+  const [association] = key.split(constants.propertiesConcatenator);
+  const nextKey = key.replace(`${association}${constants.propertiesConcatenator}`, "");
+  let relation: ParserInclude | undefined = find(opts.include, ["association", association]);
 
   if (!relation) {
     relation = { association };
@@ -122,5 +121,5 @@ const resolveWhereCondition = (
     opts.include.push(relation);
   }
 
-  return resolveWhereCondition(relation, nextKey, condition);
+  return resolveWhereCondition(relation as Partial<ParserResult>, nextKey, condition);
 };

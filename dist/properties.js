@@ -1,31 +1,53 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseProperties = void 0;
 const lodash_1 = require("lodash");
-//
-// constants
-//
-const defaultSeparator = ",";
-const defaultConcatenator = ".";
-const defaultRemotePrefix = "r-";
-const defaultExtraPrefix = "e-";
-const mapTypes = {
-    attributes: "attributes",
-    fields: "attributes",
-    include: "include"
-};
+const constants = __importStar(require("./constants"));
 //
 // helpers
 //
 const getDefaultSeparator = (type, query, options) => {
     return (((0, lodash_1.isObject)(query) ? query[`${type}Separator`] : undefined) ||
         ((0, lodash_1.isObject)(options) ? options[`${type}Separator`] : undefined) ||
-        defaultSeparator);
+        constants.propertiesSeparator);
 };
 const getDefaultConcatenator = (type, query, options) => {
     return (((0, lodash_1.isObject)(query) ? query[`${type}Concatenator`] : undefined) ||
         ((0, lodash_1.isObject)(options) ? options[`${type}Concatenator`] : undefined) ||
-        defaultConcatenator);
+        constants.propertiesConcatenator);
 };
 /**
  * Indicate if property is remote property
@@ -36,7 +58,7 @@ const getDefaultConcatenator = (type, query, options) => {
  *   person
  *   \____/ -> This is the normal property. Then, return false
  */
-const isRemoteProperty = (property) => property.startsWith(defaultRemotePrefix);
+const isRemoteProperty = (property) => property.startsWith(constants.propertiesRemotePrefix);
 /**
  * Normalize remote property if necesary
  *
@@ -46,7 +68,7 @@ const isRemoteProperty = (property) => property.startsWith(defaultRemotePrefix);
  *   person
  *   \____/ -> This is the normal property. Then, return "person"
  */
-const normalizeRemoteProperty = (property) => property.replace(defaultRemotePrefix, "");
+const normalizeRemoteProperty = (property) => property.replace(constants.propertiesRemotePrefix, "");
 /**
  * Indicate if property is extra property
  *
@@ -56,7 +78,7 @@ const normalizeRemoteProperty = (property) => property.replace(defaultRemotePref
  *   person
  *   \____/ -> This is the normal property. Then, return false
  */
-const isExtraProperty = (property) => property.startsWith(defaultExtraPrefix);
+const isExtraProperty = (property) => property.startsWith(constants.propertiesExtraPrefix);
 /**
  * Normalize extra property if necesary
  *
@@ -66,7 +88,7 @@ const isExtraProperty = (property) => property.startsWith(defaultExtraPrefix);
  *   person
  *   \____/ -> This is the normal property. Then, return "person"
  */
-const normalizeExtraProperty = (property) => property.replace(defaultExtraPrefix, "");
+const normalizeExtraProperty = (property) => property.replace(constants.propertiesExtraPrefix, "");
 /**
  * Normalize remote or extra property if necesary
  *
@@ -123,7 +145,7 @@ const resolveProperty = (opts, property, carry) => {
     }
 };
 const resolveRelationship = (context, type, property) => {
-    type = mapTypes[type] || type;
+    type = constants.propertiesMapTypes[type] || type;
     if (!isRemoteProperty(property) && !isExtraProperty(property)) {
         context[type] = context[type] || [];
     }
@@ -133,12 +155,12 @@ const resolveRelationship = (context, type, property) => {
 // source code
 //
 const parseProperties = (query, type, options = {}) => {
-    if (!query || !query[type]) {
+    if (!query || !query[type] || ((0, lodash_1.isString)(query[type]) && !query[type].trim())) {
         return;
     }
     const concatenator = getDefaultConcatenator(type, query, options);
     const separator = getDefaultSeparator(type, query, options);
-    const properties = (0, lodash_1.isString)(query[type]) ? query[type].split(separator) : query[type];
+    const properties = (0, lodash_1.isString)(query[type]) ? query[type].trim().split(separator) : query[type];
     const opts = {
         [type]: []
     };

@@ -1,12 +1,42 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sequelizeParser = void 0;
 const sequelize_1 = require("sequelize");
 const lodash_1 = require("lodash");
-//
-// constants
-//
-const fieldSeparator = ".";
+const constants = __importStar(require("../constants"));
 //
 // source code
 //
@@ -28,9 +58,10 @@ const resolveInclude = (opts) => {
     if (!opts || !opts.include) {
         return opts;
     }
-    const relations = opts.relations || {};
+    const result = opts;
+    const relations = result.relations || {};
     // Associate model
-    opts.include = opts.include.map((association) => {
+    result.include = result.include.map((association) => {
         if (!(0, lodash_1.isString)(association)) {
             return association;
         }
@@ -42,7 +73,7 @@ const resolveInclude = (opts) => {
             ...(relations[association] || {})
         });
     });
-    return opts;
+    return result;
 };
 /**
  * Resolve where option
@@ -71,7 +102,7 @@ const resolveWhere = (opts) => {
  * Resolve where nested condition
  */
 const resolveWhereCondition = (opts, key, condition) => {
-    if (!key.includes(fieldSeparator)) {
+    if (!key.includes(constants.propertiesConcatenator)) {
         opts.where = opts.where || {};
         switch (key) {
             case "or":
@@ -87,8 +118,8 @@ const resolveWhereCondition = (opts, key, condition) => {
         opts.required = true;
         return opts;
     }
-    const [association] = key.split(fieldSeparator);
-    const nextKey = key.replace(`${association}.`, "");
+    const [association] = key.split(constants.propertiesConcatenator);
+    const nextKey = key.replace(`${association}${constants.propertiesConcatenator}`, "");
     let relation = (0, lodash_1.find)(opts.include, ["association", association]);
     if (!relation) {
         relation = { association };

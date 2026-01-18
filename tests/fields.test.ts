@@ -287,9 +287,7 @@ describe("Parser", () => {
     it("should handle fields with only whitespace", () => {
       const result = parseFields({ fields: "   " });
 
-      assert.ok(result != null, "Result should not be null");
-      assert.ok(isArray(result?.fields), "Result.fields should be an array");
-      assert.ok(result?.fields?.length === 1, "Result.fields should have 1 element (whitespace)");
+      assert.ok(result == undefined, "Result should be undefined");
     });
 
     // Array input
