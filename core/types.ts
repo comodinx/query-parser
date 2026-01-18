@@ -1,10 +1,10 @@
 import { Parser, ParserOptions as ParserFiltersOptions } from "@comodinx/query-filters";
-import { FindOptions, IncludeOptions } from "sequelize";
+import { FindOptions, OrderItem, IncludeOptions } from "sequelize";
 import { Fn } from "sequelize/types/utils";
 
 export type ParserField = string | Fn;
 
-export type ParserOrder = [string, string?];
+export type ParserOrder = OrderItem;
 
 export type ParserInclude = IncludeOptions;
 
@@ -67,16 +67,7 @@ export type ParserQuery = ParserOptions & {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ParserResult = {
-  group?: string[];
-  order?: ParserOrder[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  include?: ParserInclude[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  filters?: FindOptions["where"];
-  fields?: ParserField[];
-  limit?: number;
-  offset?: number;
+export type ParserResult = FindOptions & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 };

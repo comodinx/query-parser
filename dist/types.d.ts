@@ -1,8 +1,8 @@
 import { Parser, ParserOptions as ParserFiltersOptions } from "@comodinx/query-filters";
-import { FindOptions, IncludeOptions } from "sequelize";
+import { FindOptions, OrderItem, IncludeOptions } from "sequelize";
 import { Fn } from "sequelize/types/utils";
 export type ParserField = string | Fn;
-export type ParserOrder = [string, string?];
+export type ParserOrder = OrderItem;
 export type ParserInclude = IncludeOptions;
 export type ParserOptions = {
     /** The separator for the fields (Ex. "id,created_at"). Default "," */
@@ -54,14 +54,7 @@ export type ParserQuery = ParserOptions & {
     /** The page query (Ex. "1"). Default null */
     page?: number | string;
 };
-export type ParserResult = {
-    group?: string[];
-    order?: ParserOrder[];
-    include?: ParserInclude[];
-    filters?: FindOptions["where"];
-    fields?: ParserField[];
-    limit?: number;
-    offset?: number;
+export type ParserResult = FindOptions & {
     [key: string]: any;
 };
 export type ParserPropertyType = "attributes" | "fields" | "include";

@@ -123,7 +123,7 @@ const resolveWhereCondition = (opts, key, condition) => {
     let relation = (0, lodash_1.find)(opts.include, ["association", association]);
     if (!relation) {
         relation = { association };
-        opts.include = opts.include || [];
+        opts.include = (opts.include || []);
         opts.include.push(relation);
     }
     return resolveWhereCondition(relation, nextKey, condition);

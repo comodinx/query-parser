@@ -34,7 +34,7 @@ const resolveInclude = (
   const relations = result.relations || {};
 
   // Associate model
-  result.include = result.include.map((association: ParserInclude) => {
+  result.include = (result.include as ParserInclude[]).map((association: ParserInclude) => {
     if (!isString(association)) {
       return association;
     }
@@ -117,7 +117,7 @@ const resolveWhereCondition = (
 
   if (!relation) {
     relation = { association };
-    opts.include = opts.include || [];
+    opts.include = (opts.include || []) as ParserInclude[];
     opts.include.push(relation);
   }
 

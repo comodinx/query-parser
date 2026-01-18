@@ -30,7 +30,7 @@ export const parseOrder = (
 
   return query.order.split(separator).map((condition: string) => {
     const [key, direction] = condition.split(concatenator);
-    const order = [mapping[key] || key] as ParserOrder;
+    const order = [mapping[key] || key];
 
     if (direction && constants.orderDirections.includes(direction.toUpperCase())) {
       order.push(direction.toUpperCase());

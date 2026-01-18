@@ -53,7 +53,7 @@ const parseQuery = (query, options = {}) => {
     }
     // resolve includes
     if (includeOptions) {
-        if (includeOptions.include && includeOptions.include.length) {
+        if (Array.isArray(includeOptions.include) && includeOptions.include.length) {
             opts.include = includeOptions.include;
         }
         if (includeOptions.relations) {
@@ -71,7 +71,7 @@ const parseQuery = (query, options = {}) => {
         opts.order = orders;
     }
     // resolve group
-    if (groups && groups.length) {
+    if (groups && (!Array.isArray(groups) || groups.length)) {
         opts.group = groups;
     }
     // Add raw query options

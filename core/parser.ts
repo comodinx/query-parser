@@ -20,10 +20,7 @@ const mergeArrays = (objValue: unknown, srcValue: unknown): unknown => {
 //
 // source code
 //
-export const parseQuery = (
-  query: ParserQuery,
-  options: ParserOptions = {}
-): Partial<ParserResult> => {
+export const parseQuery = (query: ParserQuery, options: ParserOptions = {}): ParserResult => {
   const pagination = parsePagination(query, options);
   const filters = parseFilters(query, options);
   const fieldsOptions = parseFields(query, options);
@@ -60,7 +57,7 @@ export const parseQuery = (
 
   // resolve includes
   if (includeOptions) {
-    if (includeOptions.include && includeOptions.include.length) {
+    if (Array.isArray(includeOptions.include) && includeOptions.include.length) {
       opts.include = includeOptions.include;
     }
     if (includeOptions.relations) {
@@ -80,7 +77,7 @@ export const parseQuery = (
   }
 
   // resolve group
-  if (groups && groups.length) {
+  if (groups && (!Array.isArray(groups) || groups.length)) {
     opts.group = groups;
   }
 
