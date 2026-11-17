@@ -314,14 +314,52 @@ describe("Parser", () => {
     });
 
     // Exact equal operator (ee)
-    it("should return literal for exact equal operator", () => {
+    it("should map exact equal operator to Op.eq keeping the value as a string", () => {
       const result = parseFilters({ filters: "id ee 1" });
 
       assert.ok(result != null, "Result should not be null");
       assert.ok(isObject(result), "Result should be an object");
-      assert.ok(result?.id != null, "Result.id should exist");
-      // Exact equal uses literal() from sequelize
-      assert.ok(result?.id != null, "Result.id should exist (literal)");
+      assert.strictEqual(result?.id?.[Op.eq], "1", "Result.id[Op.eq] should be the string '1'");
+    });
+
+    it("should not convert booleans with exact equal operator", () => {
+      const result = parseFilters({ filters: "active ee true" });
+
+      assert.strictEqual(
+        result?.active?.[Op.eq],
+        "true",
+        "Result.active[Op.eq] should be the string 'true'"
+      );
+    });
+
+    it("should not convert wildcards with exact equal operator", () => {
+      const result = parseFilters({ filters: "name ee jo*" });
+
+      assert.strictEqual(
+        result?.name?.[Op.eq],
+        "jo*",
+        "Result.name[Op.eq] should be the string 'jo*'"
+      );
+    });
+
+    it("should keep SQL text as data with exact equal operator", () => {
+      const result = parseFilters({ filters: "id ee 1 or SLEEP(5)" });
+
+      assert.strictEqual(
+        result?.id?.[Op.eq],
+        "1 or SLEEP",
+        "Result.id[Op.eq] should be the plain string, never a sequelize literal"
+      );
+    });
+
+    it("should keep quotes as data with exact equal operator", () => {
+      const result = parseFilters({ filters: "name ee x'" });
+
+      assert.strictEqual(
+        result?.name?.[Op.eq],
+        "x'",
+        "Result.name[Op.eq] should be the plain string, never a sequelize literal"
+      );
     });
 
     // Multiple operators on same field

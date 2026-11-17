@@ -1,8 +1,16 @@
 import { map } from "lodash";
 import { col, fn } from "sequelize";
+import { QueryParserError } from "./errors";
 import { parseProperties } from "./properties";
 import { ParserQuery, ParserOptions, ParserResult } from "./types";
 import * as constants from "./constants";
+
+//
+// helpers
+//
+// ASCII check first: toUpperCase() maps look-alikes such as "ſum" to "SUM"
+const isAllowedFunction = (name: string): boolean =>
+  /^[A-Za-z]+$/.test(name) && constants.fieldFunctions.includes(name.toUpperCase());
 
 //
 // source code
@@ -30,6 +38,15 @@ export const parseFields = (
       }
 
       const [functionName, fieldName, alias, ...rest] = parts;
+
+      // sequelize writes the function name into the SQL without escaping
+      if (!isAllowedFunction(functionName)) {
+        throw new QueryParserError(
+          "INVALID_FIELD_FUNCTION",
+          `Field function not allowed. Allowed functions: ${constants.fieldFunctions.join(", ")}`,
+          functionName
+        );
+      }
 
       return [
         fn(functionName, col(fieldName), ...rest),

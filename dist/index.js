@@ -46,4 +46,5 @@ __exportStar(require("./order"), exports);
 __exportStar(require("./group"), exports);
 __exportStar(require("./orm"), exports);
 __exportStar(require("./types"), exports);
+__exportStar(require("./errors"), exports);
 exports.constants = __importStar(require("./constants"));

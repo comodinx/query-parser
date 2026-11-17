@@ -71,6 +71,8 @@ This section was designed to facilitate the interpretation of query parameters.
 
 > 💡 For more details on how filters work and their syntax, [check this link](https://www.npmjs.com/package/@comodinx/query-filters).  
 
+> ℹ️ The `ee` (exact equal) operator compares the value as-is: it is not converted to number, boolean or wildcard, and it is always sent to the database as a bound value. Example, `code ee 0010` matches the string `"0010"`.  
+
 <hr/>  
 <p align="right">(<a href="#top">go to top</a>)</p>  
 
@@ -92,6 +94,21 @@ This section was designed to facilitate the interpretation of query parameters.
 | fields | string | `"*"`         | Fields to include in the search results.           |
 |        |        |               | Example,                                           |
 |        |        |               | `id,statusId`                                      |  
+
+Aggregate functions use the `FUNCTION-field[-alias]` syntax (Ex. `COUNT-id-total`). Only `COUNT`, `SUM`, `MIN`, `MAX` and `AVG` are allowed (case-insensitive). Any other function throws a `QueryParserError` with code `INVALID_FIELD_FUNCTION`; map it to a `400 Bad Request` in your API.  
+
+```ts
+import { parseQuery, QueryParserError } from "@comodinx/query-parser";
+
+try {
+  const options = parseQuery(req.query);
+} catch (error) {
+  if (error instanceof QueryParserError) {
+    // respond 400 Bad Request
+  }
+  throw error;
+}
+```
 
 <hr/>  
 <p align="right">(<a href="#top">go to top</a>)</p>  
