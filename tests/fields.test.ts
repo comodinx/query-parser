@@ -1,7 +1,7 @@
 import { isArray, isNull } from "lodash";
 import assert from "node:assert";
 import { describe, it } from "node:test";
-import { parseFields } from "../core";
+import { parseFields, QueryParserError } from "../core";
 
 describe("Parser", () => {
   describe("#fields", () => {
@@ -340,6 +340,50 @@ describe("Parser", () => {
       assert.ok(isArray(result?.fields), "Result.fields should be an array");
       assert.ok(Array.isArray(result?.fields?.[0]), "Result.fields[0] should be an array");
       assert.ok(result?.fields?.[0]?.[0] != null, "Result.fields[0][0] should be AVG function");
+    });
+
+    // Allowed functions
+    it("should accept allowed functions regardless of case", () => {
+      const result = parseFields({ fields: "count-id" });
+
+      assert.ok(Array.isArray(result?.fields?.[0]), "Result.fields[0] should be an array");
+      assert.strictEqual(result?.fields?.[0]?.[0]?.fn, "count", "Function name should be kept");
+    });
+
+    it("should throw QueryParserError for a function outside the allowed list", () => {
+      assert.throws(
+        () => parseFields({ fields: "SLEEP-id" }),
+        (error: unknown) =>
+          error instanceof QueryParserError &&
+          error.code === "INVALID_FIELD_FUNCTION" &&
+          error.functionName === "SLEEP"
+      );
+    });
+
+    it("should throw QueryParserError when the function name contains SQL", () => {
+      assert.throws(
+        () => parseFields({ fields: "COUNT(1) OR SLEEP(5)-id" }),
+        (error: unknown) =>
+          error instanceof QueryParserError && error.code === "INVALID_FIELD_FUNCTION"
+      );
+    });
+
+    it("should throw QueryParserError for non-ASCII look-alikes of allowed functions", () => {
+      for (const fields of ["ſum-id", "mın-id"]) {
+        assert.throws(
+          () => parseFields({ fields }),
+          (error: unknown) =>
+            error instanceof QueryParserError && error.code === "INVALID_FIELD_FUNCTION",
+          `${fields} should be rejected`
+        );
+      }
+    });
+
+    it("should not include the function name in the error message", () => {
+      assert.throws(
+        () => parseFields({ fields: "CONCAT-name" }),
+        (error: unknown) => error instanceof Error && !error.message.includes("CONCAT")
+      );
     });
 
     // Duplicate handling

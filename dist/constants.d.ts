@@ -4,6 +4,7 @@ export declare const fieldSeparator = ",";
 export declare const fieldConcatenator = ".";
 export declare const fieldGroupConcatenator = "-";
 export declare const fieldAllIndicator = "*";
+export declare const fieldFunctions: string[];
 export declare const orderDirections: string[];
 export declare const orderMappingFieldNames: Record<string, string>;
 export declare const orderSeparator = ",";

@@ -76,9 +76,9 @@ const isBooleanString = (value) => {
 };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapValueParse = (value, operator) => {
-    // exact equal
+    // exact equal: compared as-is (no number, boolean or wildcard conversion) and sent as a bound value
     if (operator.trim() === operators.exactEqual) {
-        return (0, sequelize_1.literal)(value);
+        return String(value);
     }
     // is or is not
     if (operator.trim() === operators.isNull || operator.trim() === operators.isNotNull) {

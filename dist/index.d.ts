@@ -7,4 +7,5 @@ export * from "./order";
 export * from "./group";
 export * from "./orm";
 export * from "./types";
+export * from "./errors";
 export * as constants from "./constants";

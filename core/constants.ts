@@ -12,6 +12,7 @@ export const fieldSeparator = ",";
 export const fieldConcatenator = ".";
 export const fieldGroupConcatenator = "-";
 export const fieldAllIndicator = "*";
+export const fieldFunctions = ["COUNT", "SUM", "MIN", "MAX", "AVG"];
 
 //
 // orders

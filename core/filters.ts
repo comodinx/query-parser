@@ -59,9 +59,9 @@ const isBooleanString = (value: unknown): boolean => {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapValueParse = <T = any>(value: unknown, operator: string): T | null => {
-  // exact equal
+  // exact equal: compared as-is (no number, boolean or wildcard conversion) and sent as a bound value
   if (operator.trim() === operators.exactEqual) {
-    return literal(value as never) as T;
+    return String(value) as T;
   }
 
   // is or is not

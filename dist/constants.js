@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.booleans = exports.falses = exports.trues = exports.propertiesMapTypes = exports.propertiesExtraPrefix = exports.propertiesRemotePrefix = exports.propertiesConcatenator = exports.propertiesSeparator = exports.valueLikeParse = exports.valueLikeFormat = exports.keyPattern = exports.filtersJsonKeys = exports.groupSeparator = exports.orderConcatenator = exports.orderSeparator = exports.orderMappingFieldNames = exports.orderDirections = exports.fieldAllIndicator = exports.fieldGroupConcatenator = exports.fieldConcatenator = exports.fieldSeparator = exports.paginationPageSize = void 0;
+exports.booleans = exports.falses = exports.trues = exports.propertiesMapTypes = exports.propertiesExtraPrefix = exports.propertiesRemotePrefix = exports.propertiesConcatenator = exports.propertiesSeparator = exports.valueLikeParse = exports.valueLikeFormat = exports.keyPattern = exports.filtersJsonKeys = exports.groupSeparator = exports.orderConcatenator = exports.orderSeparator = exports.orderMappingFieldNames = exports.orderDirections = exports.fieldFunctions = exports.fieldAllIndicator = exports.fieldGroupConcatenator = exports.fieldConcatenator = exports.fieldSeparator = exports.paginationPageSize = void 0;
 //
 // pagination
 //
@@ -12,6 +12,7 @@ exports.fieldSeparator = ",";
 exports.fieldConcatenator = ".";
 exports.fieldGroupConcatenator = "-";
 exports.fieldAllIndicator = "*";
+exports.fieldFunctions = ["COUNT", "SUM", "MIN", "MAX", "AVG"];
 //
 // orders
 //

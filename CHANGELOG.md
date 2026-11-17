@@ -16,3 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Add support for typescript
 
 - Add support for TypeScript and update query-filters library
+
+## [1.0.3] - 2026-11-17
+
+### Security
+
+- `ee` (exact equal) filter values are now compared as plain bound values instead of raw SQL (`literal`), closing a SQL injection vector. The value is not converted to number, boolean or wildcard.
+- `fields` aggregate functions are restricted to `COUNT`, `SUM`, `MIN`, `MAX` and `AVG`. Any other function throws `QueryParserError` (`INVALID_FIELD_FUNCTION`).
+
+### Added
+
+- `QueryParserError` exported error class with a stable `code`.

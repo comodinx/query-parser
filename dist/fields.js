@@ -36,8 +36,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseFields = void 0;
 const lodash_1 = require("lodash");
 const sequelize_1 = require("sequelize");
+const errors_1 = require("./errors");
 const properties_1 = require("./properties");
 const constants = __importStar(require("./constants"));
+//
+// helpers
+//
+// ASCII check first: toUpperCase() maps look-alikes such as "ſum" to "SUM"
+const isAllowedFunction = (name) => /^[A-Za-z]+$/.test(name) && constants.fieldFunctions.includes(name.toUpperCase());
 //
 // source code
 //
@@ -56,6 +62,10 @@ const parseFields = (query, options = {}) => {
                 return field;
             }
             const [functionName, fieldName, alias, ...rest] = parts;
+            // sequelize writes the function name into the SQL without escaping
+            if (!isAllowedFunction(functionName)) {
+                throw new errors_1.QueryParserError("INVALID_FIELD_FUNCTION", `Field function not allowed. Allowed functions: ${constants.fieldFunctions.join(", ")}`, functionName);
+            }
             return [
                 (0, sequelize_1.fn)(functionName, (0, sequelize_1.col)(fieldName), ...rest),
                 alias ?? (fieldName !== constants.fieldAllIndicator ? fieldName : functionName)
